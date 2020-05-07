@@ -97,44 +97,44 @@ describe('OwnerService', () => {
     });
   });
 
-  describe('getAllCatsInOwner', () => {
-    it('should return array cat', async () => {
-      const ownerID = 4;
-      const result = Owners[3].cats;
-      jest
-        .spyOn(ownerService, 'getAllCatsInOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
-    });
-  });
+  // describe('getAllCatsInOwner', () => {
+  //   it('should return array cat', async () => {
+  //     const ownerID = 4;
+  //     const result = Owners[3].cats;
+  //     jest
+  //       .spyOn(ownerService, 'getAllCatsInOwner')
+  //       .mockImplementation(() => result);
+  //     expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
+  //   });
+  // });
 
-  describe('getAllCatsInOwner error miss ID', () => {
-    it('should return array cat', async () => {
-      const ownerID = undefined;
-      const result: Record<string, any> = {
-        type: 'Error',
-        content: 'Not Found',
-      };
-      jest
-        .spyOn(ownerService, 'getAllCatsInOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
-    });
-  });
+  // describe('getAllCatsInOwner error miss ID', () => {
+  //   it('should return array cat', async () => {
+  //     const ownerID = undefined;
+  //     const result: Record<string, any> = {
+  //       type: 'Error',
+  //       content: 'Not Found',
+  //     };
+  //     jest
+  //       .spyOn(ownerService, 'getAllCatsInOwner')
+  //       .mockImplementation(() => result);
+  //     expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
+  //   });
+  // });
 
-  describe('getAllCatsInOwner error not available ID', () => {
-    it('should return array cat', async () => {
-      const ownerID = 78;
-      const result: Record<string, any> = {
-        type: 'Error',
-        content: 'Not Found',
-      };
-      jest
-        .spyOn(ownerService, 'getAllCatsInOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
-    });
-  });
+  // describe('getAllCatsInOwner error not available ID', () => {
+  //   it('should return array cat', async () => {
+  //     const ownerID = 78;
+  //     const result: Record<string, any> = {
+  //       type: 'Error',
+  //       content: 'Not Found',
+  //     };
+  //     jest
+  //       .spyOn(ownerService, 'getAllCatsInOwner')
+  //       .mockImplementation(() => result);
+  //     expect(await ownerService.getAllCatsInOwner(ownerID)).toEqual(result);
+  //   });
+  // });
 
   describe('getCatInOwner', () => {
     it('should return cat by ID', async () => {
@@ -210,61 +210,6 @@ describe('OwnerService', () => {
     });
   });
 
-  describe('addCatForOwner', () => {
-    it('should return new cat', async () => {
-      const ownerID = 2;
-      const cat: CreateCatDTO = {
-        id: 22,
-        name: 'Test22',
-        state: StateEnum.new,
-      };
-      const result: CreateCatDTO = {
-        id: 22,
-        name: 'Test22',
-        state: StateEnum.added,
-      };
-      jest
-        .spyOn(ownerService, 'addCatForOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.addCatForOwner(ownerID, cat)).toEqual(result);
-    });
-  });
-
-  describe('addCatForOwner', () => {
-    it('should return new cat', async () => {
-      const ownerID = 2;
-      const cat: CreateCatDTO = {
-        id: 22,
-        name: 'Test22',
-        state: StateEnum.new,
-      };
-      const result: CreateCatDTO = {
-        id: 22,
-        name: 'Test22',
-        state: StateEnum.added,
-      };
-      jest
-        .spyOn(ownerService, 'addCatForOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.addCatForOwner(ownerID, cat)).toEqual(result);
-    });
-  });
-
-  describe('addCatForOwner available ID', () => {
-    it('should return new cat', async () => {
-      const ownerID = 4;
-      const cat: CreateCatDTO = { id: 4, name: 'Test22', state: StateEnum.new };
-      const result: Record<string, any> = {
-        type: 'Error',
-        content: 'Not Found',
-      };
-      jest
-        .spyOn(ownerService, 'addCatForOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.addCatForOwner(ownerID, cat)).toEqual(result);
-    });
-  });
-
   describe('addMultiCatsForOwner', () => {
     it('should return array new cats', async () => {
       const ownerID = 4;
@@ -336,50 +281,7 @@ describe('OwnerService', () => {
     });
   });
 
-  describe('deleteCatOfOwner', () => {
-    it('should return message', async () => {
-      const ownerID = 4;
-      const catID = 4;
-      const result = 'Delete Cat of Owner';
-      jest
-        .spyOn(ownerService, 'deleteCatOfOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.deleteCatOfOwner(ownerID, catID)).toBe(result);
-    });
-  });
-
-  describe('deleteCatOfOwner miss ownerID', () => {
-    it('should return message', async () => {
-      const ownerID = undefined;
-      const catID = 4;
-      const result = 'Not Found';
-      jest
-        .spyOn(ownerService, 'deleteCatOfOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.deleteCatOfOwner(ownerID, catID)).toBe(result);
-    });
-  });
-
-  describe('deleteMultiCatsOfOwner', () => {
-    it('should return message', async () => {
-      const ownerID = 5;
-      const cats: Array<{ id: number }> = [
-        {
-          id: 5,
-        },
-        {
-          id: 8,
-        },
-      ];
-      const result = 'Deleted Cats';
-      jest
-        .spyOn(ownerService, 'deleteCatOfOwner')
-        .mockImplementation(() => result);
-      expect(await ownerService.deleteMultiCatsOfOwner(ownerID, cats)).toEqual(
-        result,
-      );
-    });
-  });
+  //
 
   describe('deleteMultiCatsOfOwner miss ownerID', () => {
     it('should return message', async () => {

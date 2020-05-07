@@ -8,7 +8,7 @@ import {
   CreateOwnerDTO,
   StateOwnerEnum,
 } from '../src/owners/dto/create-owner.dto';
-import { CreateCatDTO, StateEnum } from '../src/cats/dto/create-cat.dto';
+import { StateEnum } from '../src/cats/dto/create-cat.dto';
 import { UpdateOwnerDTO } from '../src/owners/dto/update-owner.dto';
 import { UpdateCatDTO } from '../src/cats/dto/update-cat.dto';
 
@@ -88,46 +88,6 @@ describe('Owner', () => {
       const ownerID = 78;
       const response = await request(app.getHttpServer())
         .get('/test2/owners/owner/' + ownerID)
-        .expect(404);
-      expect(typeof response.body).toBe('object');
-      expect(response.body.statusCode).toEqual(404);
-    } catch (err) {
-      throw err;
-    }
-  });
-
-  it(`/GET all cats of owners by ID`, async () => {
-    try {
-      const ownerID = 2;
-      const result = Owners[1];
-      const response = await request(app.getHttpServer())
-        .get('/test2/owners/cats/' + ownerID)
-        .expect(200);
-      expect(typeof response.body).toBe('object');
-      expect(response.body).toEqual(result);
-    } catch (err) {
-      throw err;
-    }
-  });
-
-  it(`/GET all cats of owners by ID error miss ID`, async () => {
-    try {
-      const ownerID = undefined;
-      const response = await request(app.getHttpServer())
-        .get('/test2/owners/cats/' + ownerID)
-        .expect(404);
-      expect(typeof response.body).toBe('object');
-      expect(response.body.statusCode).toEqual(404);
-    } catch (err) {
-      throw err;
-    }
-  });
-
-  it(`/GET all cats of owners by ID not available`, async () => {
-    try {
-      const ownerID = 78;
-      const response = await request(app.getHttpServer())
-        .get('/test2/owners/cats/' + ownerID)
         .expect(404);
       expect(typeof response.body).toBe('object');
       expect(response.body.statusCode).toEqual(404);
@@ -262,77 +222,20 @@ describe('Owner', () => {
     }
   });
 
-  // it(`/Post add cat for owner`, async () => {
-  //   try {
-  //     const ownerID = 5;
-  //     const catNew: CreateCatDTO = {
-  //       id: 8,
-  //       name: 'Test 8',
-  //       state: StateEnum.new,
-  //     };
-  //     const response = await request(app.getHttpServer())
-  //       .post('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(catNew)
-  //       .expect(201);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.cats[2].id).toBe(catNew.id);
-  //     expect(response.body.cats[2].name).toBe(catNew.name);
-  //     expect(response.body.cats[2].state).toBe(StateEnum.added);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-  // it(`/Post add cat for miss ownerID`, async () => {
-  //   try {
-  //     const ownerID = undefined;
-  //     const newOwner: CreateOwnerDTO = {
-  //       id: 6,
-  //       name: 'Boss 6',
-  //     };
-  //     const response = await request(app.getHttpServer())
-  //       .post('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(newOwner)
-  //       .expect(404);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.statusCode).toEqual(404);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-  // it(`/Post add cat for owner available ownerID`, async () => {
-  //   try {
-  //     const ownerID = 1;
-  //     const newOwner: CreateOwnerDTO = {
-  //       id: 1,
-  //       name: 'Boss 1',
-  //       state: StateOwnerEnum.new,
-  //     };
-  //     const response = await request(app.getHttpServer())
-  //       .post('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(newOwner)
-  //       .expect(403);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.statusCode).toEqual(403);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-
   //***** Check if use single add cat */
   it(`/Post add multi cats for owner`, async () => {
     try {
-      const ownerID = 5;
+      const ownerID = 3;
       const ownedCats: CreateOwnerDTO[] = [
         {
           id: 3,
           name: 'Pussy Cat',
+          state: StateOwnerEnum.new,
         },
         {
           id: 5,
           name: 'Cat 5',
+          state: StateOwnerEnum.new,
         },
         {
           id: 15,
@@ -341,14 +244,14 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .post('/test2/owners/cats?ownerID=' + ownerID)
+        .post('/test2/owners/cat?ownerID=' + ownerID)
         .send(ownedCats)
         .expect(201);
       expect(typeof response.body).toBe('object');
-      expect(response.body.cats[2].id).toBe(ownedCats[2].id);
-      expect(response.body.cats[2].name).toBe(ownedCats[2].name);
-      expect(response.body.cats[2].state).toBe(ownedCats[2].state);
-      expect(response.body.state).toBe(StateOwnerEnum.added);
+      expect(response.body.cats[0].id).toBe(ownedCats[0].id);
+      expect(response.body.cats[0].name).toBe(ownedCats[0].name);
+      expect(response.body.cats[0].state).toBe(ownedCats[0].state);
+      expect(response.body.state).toBe(StateOwnerEnum.new);
     } catch (err) {
       throw err;
     }
@@ -373,7 +276,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .post('/test2/owners/cats?ownerID=' + ownerID)
+        .post('/test2/owners/cat?ownerID=' + ownerID)
         .send(ownedCats)
         .expect(404);
       expect(typeof response.body).toBe('object');
@@ -422,63 +325,21 @@ describe('Owner', () => {
     }
   });
 
-  it(`/Delete delete cat of owner`, async () => {
-    try {
-      const ownerID = 5;
-      const catID = 15;
-      const result = 'Deleted Cat of Owner';
-      const response = await request(app.getHttpServer())
-        .delete('/test2/owners/cat?ownerID=' + ownerID + '&catID=' + catID)
-        .expect(200);
-      expect(response.text).toBe(result);
-    } catch (err) {
-      throw err;
-    }
-  });
-
-  it(`/Delete delete cat of owner miss ownerID`, async () => {
-    try {
-      const ownerID = undefined;
-      const catID = 15;
-      const response = await request(app.getHttpServer())
-        .delete('/test2/owners/cat?ownerID=' + ownerID + '&catID=' + catID)
-        .expect(404);
-      expect(typeof response.body).toBe('object');
-      expect(response.body.statusCode).toEqual(404);
-    } catch (err) {
-      throw err;
-    }
-  });
-
-  it(`/Delete delete cat of owner catID not available`, async () => {
-    try {
-      const ownerID = 5;
-      const catID = 15;
-      const response = await request(app.getHttpServer())
-        .delete('/test2/owners/cat?ownerID=' + ownerID + '&catID=' + catID)
-        .expect(404);
-      expect(typeof response.body).toBe('object');
-      expect(response.body.statusCode).toEqual(404);
-    } catch (err) {
-      throw err;
-    }
-  });
-
   //--------------------------
   it(`/Delete delete multi cats of owner`, async () => {
     try {
       const ownerID = 5;
       const cats: Array<{ id: number }> = [
         {
-          id: 5,
-        },
-        {
           id: 3,
         },
-      ];
+        {
+          id: 5,
+        },
+      ]
       const result = 'Deleted Cats';
       const response = await request(app.getHttpServer())
-        .delete('/test2/owners/cats?ownerID=' + ownerID)
+        .delete('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(200);
       expect(response.text).toBe(result);
@@ -499,7 +360,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .delete('/test2/owners/cats?ownerID=' + ownerID)
+        .delete('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(404);
       expect(typeof response.body).toBe('object');
@@ -516,8 +377,7 @@ describe('Owner', () => {
         name: 'Boss1222',
         state: StateOwnerEnum.new,
         cats: [
-          { id: 4, name: 'Test 1', state: StateEnum.new },
-          { id: 5, name: 'Test 5', state: StateEnum.new },
+          { id: 2, name: 'Test 1', state: StateEnum.new },
         ],
       };
       const response = await request(app.getHttpServer())
@@ -575,73 +435,6 @@ describe('Owner', () => {
     }
   });
 
-  // it(`/Patch update Cat of Owner`, async () => {
-  //   try {
-  //     const ownerID = 4;
-  //     const cat: UpdateCatDTO = {
-  //       id: 4,
-  //       name: 'Boss 44',
-  //       state: StateEnum.new,
-  //     };
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(cat)
-  //       .expect(200);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.cats[0].id).toBe(cat.id);
-  //     expect(response.body.cats[0].name).toBe(cat.name);
-  //     expect(response.body.cats[0].state).toBe(StateEnum.updated);
-  //     expect(response.body.state).toBe(StateOwnerEnum.updated);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-  // it(`/Patch update Cat of Owner miss catID`, async () => {
-  //   try {
-  //     const ownerID = 4;
-  //     const cat: UpdateCatDTO = { id: undefined, name: 'Boss 44' };
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(cat)
-  //       .expect(404);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.statusCode).toEqual(404);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-  // it(`/Patch update Cat of Owner cat not available`, async () => {
-  //   try {
-  //     const ownerID = 4;
-  //     const cat: UpdateCatDTO = { id: 8, name: 'Boss 44' };
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(cat)
-  //       .expect(404);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.statusCode).toEqual(404);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
-  // it(`/Patch update Cat of Owner state not available`, async () => {
-  //   try {
-  //     const ownerID = 4;
-  //     const cat = { id: 8, name: 'Boss 44', state: 'Test' };
-  //     const response = await request(app.getHttpServer())
-  //       .patch('/test2/owners/cat?ownerID=' + ownerID)
-  //       .send(cat)
-  //       .expect(404);
-  //     expect(typeof response.body).toBe('object');
-  //     expect(response.body.statusCode).toEqual(404);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // });
-
   it(`/Patch update Multi Cats of Owner`, async () => {
     try {
       const ownerID = 4;
@@ -654,7 +447,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .patch('/test2/owners/cats?ownerID=' + ownerID)
+        .patch('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(200);
       expect(typeof response.body).toBe('object');
@@ -679,7 +472,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .patch('/test2/owners/cats?ownerID=' + ownerID)
+        .patch('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(404);
       expect(typeof response.body).toBe('object');
@@ -694,11 +487,11 @@ describe('Owner', () => {
       const ownerID = 3;
       const cats: UpdateCatDTO[] = undefined;
       const response = await request(app.getHttpServer())
-        .patch('/test2/owners/cats?ownerID=' + ownerID)
+        .patch('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
-        .expect(400);
+        .expect(404);
       expect(typeof response.body).toBe('object');
-      expect(response.body.statusCode).toEqual(400);
+      expect(response.body.statusCode).toEqual(404);
     } catch (err) {
       throw err;
     }
@@ -716,7 +509,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .patch('/test2/owners/cats?ownerID=' + ownerID)
+        .patch('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(200);
       expect(typeof response.body).toBe('object');
@@ -739,7 +532,7 @@ describe('Owner', () => {
         },
       ];
       const response = await request(app.getHttpServer())
-        .patch('/test2/owners/cats?ownerID=' + ownerID)
+        .patch('/test2/owners/cat?ownerID=' + ownerID)
         .send(cats)
         .expect(404);
       expect(typeof response.body).toBe('object');

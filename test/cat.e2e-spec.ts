@@ -7,8 +7,6 @@ import { CreateCatDTO, StateEnum } from '../src/cats/dto/create-cat.dto';
 import { UpdateCatDTO } from '../src/cats/dto/update-cat.dto';
 import { CatsService } from '../src/cats/cats.service';
 
-
-
 describe('Cats', () => {
   let app: INestApplication;
   let catsService: CatsService;

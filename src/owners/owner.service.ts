@@ -1,8 +1,8 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { Owners } from './database/owner.mock';
 import { OwnedCats } from './interfaces/owner.interface';
-import { Cats } from '../cats/cats.mock';
-import { Cat, OwnerOfCat } from '../cats/interfaces/cat.interface';
+
+import { Cat } from '../cats/interfaces/cat.interface';
 import { CreateOwnerDTO, StateOwnerEnum } from './dto/create-owner.dto';
 import { CreateCatDTO, StateEnum } from '../cats/dto/create-cat.dto';
 import { UpdateCatDTO } from '../cats/dto/update-cat.dto';
@@ -23,19 +23,12 @@ export class OwnerService {
   }
 
   getOwnerByName(ownerName: string): Record<string, any> {
+    console.log(ownerName);
     const owner = Owners.find(
       owner => owner.name.toLowerCase() == ownerName.toLowerCase(),
     );
     if (!owner || ownerName == undefined) {
       throw new HttpException('Not Found this Owner name', 404);
-    }
-    return owner;
-  }
-
-  getAllCatsInOwner(ownerID: number): Record<string, any> {
-    const owner = this.collectOwner(ownerID);
-    if (!owner || ownerID == undefined) {
-      throw new HttpException('Not Found this Owner ID', 404);
     }
     return owner;
   }
@@ -76,62 +69,38 @@ export class OwnerService {
     throw new HttpException('Forbidden', 403);
   }
 
-  // Can merge this with multicats ??
-  addCatForOwner(ownerID: number, cat: CreateCatDTO): any {
-    const owner = this.collectOwner(ownerID);
-    if (!owner || ownerID == undefined) {
-      throw new HttpException('Not Found this owner ID', 404);
-    } else {
-      if (!this.isStateEnumValid(cat.state))
-        throw new HttpException('State of Cat not valid', 404);
-      if (owner.cats == undefined) owner.cats = [];
-      if (cat.id == undefined)
-        throw new HttpException('Not Found this Cat ID', 404);
-      const catAvailable = this.collectCat(owner.cats, cat.id);
-      if (!catAvailable) {
-        cat.state = StateEnum.added;
-        owner.cats.push(cat);
-        const catAddCats: OwnerOfCat = {
-          id: cat.id,
-          name: cat.name,
-          state: cat.state,
-          owner: {
-            id: owner.id,
-            name: owner.name,
-          },
-        };
-        Cats.push(catAddCats);
-        return owner;
-      }
-      throw new HttpException('Forbidden', 403);
+  addMultiCatsForOwner(ownerID: number, ownedCats: CreateCatDTO[]): any {
+    if (ownerID == undefined) {
+      throw new HttpException('Not Found this Owner ID', 404);
     }
-  }
-
-  addMultiCatsForOwner(
-    ownerID: number,
-    ownedCats: CreateCatDTO[],
-  ): Record<string, any> {
     ownedCats = this.spliceCatHaveStateNotValid(ownedCats);
+    if (ownedCats.length == 0) {
+      throw new HttpException('New Cats state are not valid', 404);
+    }
     const owner = this.collectOwner(ownerID);
-    if (!owner || owner.id == undefined) {
+    if (!owner) {
       throw new HttpException('Not Found this Owner ID', 404);
     }
     if (owner.cats == undefined) {
-      owner.cats = [];
       owner.cats = ownedCats;
+      return owner;
+    } else {
+      if (
+        this.removeDuplicates(owner.cats, ownedCats) ==
+        'New Cats are duplicated'
+      ) {
+        throw new HttpException('New Cats are duplicated', 404);
+      } else {
+        const isFilteredCatsDuplicate: Cat[] = this.removeDuplicates(
+          owner.cats,
+          ownedCats,
+        );
+        owner.state = StateOwnerEnum.added;
+        owner.cats = isFilteredCatsDuplicate;
+        return owner;
+      }
     }
-    owner.cats = owner.cats.concat(ownedCats);
-    if (
-      this.removeDuplicates(owner.cats, ownedCats) == 'New Cats are duplicated'
-    ) {
-      throw new HttpException('New Cats are duplicated', 404);
-    }
-    const isCatsDuplicate: Cat[] = this.removeDuplicates(owner.cats, ownedCats);
-    owner.state = StateOwnerEnum.added;
-    owner.cats = isCatsDuplicate;
-    return owner;
   }
-
   deleteOwner(ownerID: number): string {
     const ownerIndex = this.collectOwnerIndex(ownerID);
     if (ownerIndex == -1 || ownerID == undefined) {
@@ -142,41 +111,41 @@ export class OwnerService {
     }
   }
 
-  deleteCatOfOwner(ownerID: number, catID: number): string {
-    const owner = this.collectOwner(ownerID);
-    if (!owner || catID == undefined) {
-      throw new HttpException('Not Found this Owner ID', 404);
-    } else {
-      const catIndex = this.collectCatIndex(owner.cats, catID);
-      if (catIndex == -1) {
-        throw new HttpException('Not Found this Cat ID', 404);
-      } else {
-        owner.cats.splice(catIndex, 1);
-        return 'Deleted Cat of Owner';
-      }
-    }
-  }
-
   deleteMultiCatsOfOwner(
     ownerID: number,
     ownedCats: Array<{ id: number }>,
   ): string {
+    if (ownedCats == undefined) {
+      throw new HttpException('Not Found Cat ID', 404);
+    }
     const owner = this.collectOwner(ownerID);
-    if (!owner || ownedCats == undefined) {
+    if (!owner) {
       throw new HttpException('Not Found this Owner ID', 404);
     } else {
-      const mess = this.removeCatsOfOwner(owner.cats, ownedCats);
-      return mess;
+      if (
+        this.removeCatsOfOwner(owner.cats, ownedCats) != 'Cats are not in Owner'
+      ) {
+        owner.cats = this.removeCatsOfOwner(owner.cats, ownedCats);
+        const mess = 'Deleted Cats';
+        return mess;
+      } else {
+        throw new HttpException('Cats are not in Owner', 404);
+      }
     }
   }
-
   updateOwner(owner: UpdateOwnerDTO): any {
+    if (owner.id == undefined) {
+      throw new HttpException('Not Found this Owner ID', 404);
+    }
     const ownerAvailable = this.collectOwner(owner.id);
-    if (!ownerAvailable || owner.id == undefined) {
+    if (!ownerAvailable) {
       throw new HttpException('Not Found this Owner ID', 404);
     }
     if (!this.isStateOwnerEnumValid(owner.state)) {
       throw new HttpException('State of Owner is not valid', 404);
+    }
+    if (this.updateMultiCat(ownerAvailable.cats, owner.cats) == 'Not valid') {
+      throw new HttpException('Cats are not valid', 404);
     }
     ownerAvailable.cats = this.updateMultiCat(ownerAvailable.cats, owner.cats);
     ownerAvailable.name = owner.name;
@@ -240,26 +209,43 @@ export class OwnerService {
 
   removeDuplicates(cats: Cat[], newCats: Cat[]): any {
     const uniqueArray = [];
-    let duplicatedArray = [];
-    for (const i in cats) {
-      const index = uniqueArray.findIndex(cat => cat.id == cats[i].id);
+    const duplicatedArray = [];
+    let mergeCats = [];
+    mergeCats = mergeCats.concat(cats);
+    for (const j in newCats) {
+      mergeCats.push(newCats[j]);
+    }
+    for (const i in mergeCats) {
+      const index = uniqueArray.findIndex(cat => cat.id == mergeCats[i].id);
       if (index == -1) {
         uniqueArray.push(cats[i]);
-        continue;
+      } else {
+        duplicatedArray.push(cats[i]);
       }
-      duplicatedArray.push(cats[i]);
     }
-    if (duplicatedArray.length == newCats.length)
+    if (duplicatedArray.length >= newCats.length) {
       return 'New Cats are duplicated';
-    return uniqueArray;
+    } else {
+      return uniqueArray;
+    }
   }
 
-  removeCatsOfOwner(cats: Cat[], catsDelete: Array<{ id: number }>): string {
+  removeCatsOfOwner(cats: Cat[], catsDelete: Array<{ id: number }>): any {
+    const catsNotAvailable = [];
+    const catsFiltered = [];
     for (const i in catsDelete) {
       const index = cats.findIndex(cat => cat.id == catsDelete[i].id);
-      if (index != -1) cats.splice(index, 1);
+      if (index != -1 ) {
+        catsFiltered.push(cats[i]);
+      } else {
+        catsNotAvailable.push(cats[i]);
+      }
     }
-    return 'Deleted Cats';
+    if (catsNotAvailable.length >= catsDelete.length) {
+      return 'Cats are not in Owner';
+    } else {
+      return catsNotAvailable;
+    }
   }
 
   isStateOwnerEnumValid(state: string): string {
@@ -276,28 +262,30 @@ export class OwnerService {
   }
 
   spliceCatHaveStateNotValid(cats: Cat[]): any {
+    const filtered = [];
     for (const k in cats) {
-      if (!this.isStateEnumValid(cats[k].state)) {
-        const index = cats.findIndex(cat => cat.id == cats[k].id);
-        cats.splice(index, 1);
+      if (this.isStateEnumValid(cats[k].state)) {
+        if (cats[k].id != undefined) {
+          filtered.push(cats[k]);
+        }
       }
     }
-    return cats;
+    return filtered;
   }
 
   updateMultiCat(cats: Cat[], catsUpdate: UpdateCatDTO[]): any {
     catsUpdate = this.spliceCatHaveStateNotValid(catsUpdate);
-    let filtered = [];
+    const filtered = [];
     for (const i in catsUpdate) {
       const cat = cats.find(cat => cat.id == catsUpdate[i].id);
       if (cat) {
         cat.name = catsUpdate[i].name;
         cat.state = StateEnum.updated;
-        continue;
+      } else {
+        filtered.push(cat);
       }
-      filtered.push(cat);
     }
-    if (filtered.length == catsUpdate.length) {
+    if (filtered.length >= catsUpdate.length) {
       return 'Not valid';
     }
     return cats;
